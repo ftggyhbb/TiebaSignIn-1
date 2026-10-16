@@ -25,7 +25,13 @@ jobs:
         env:
           BDUSS: ${{ secrets.BDUSS }}
           WECHAT_WEBHOOK_KEY: ${{ secrets.WECHAT_WEBHOOK_KEY }}
-        run: python run.py
+        run: python run.py 2>&1 | tee sign.log
+
+      - name: Push result to WeChat
+        if: always()
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python pushplus_notify.py "贴吧每日签到" sign.log "${{ job.status }}"
 
   workflow-keepalive:
     if: github.event_name == 'schedule'
@@ -34,4 +40,3 @@ jobs:
       actions: write
     steps:
       - uses: liskin/gh-workflow-keepalive@v1
-
